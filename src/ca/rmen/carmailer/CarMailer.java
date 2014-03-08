@@ -1,4 +1,3 @@
-package ca.rmen.carmailer;
 /*
  * ----------------------------------------------------------------------------
  * "THE WINE-WARE LICENSE" Version 1.0:
@@ -12,6 +11,8 @@ package ca.rmen.carmailer;
  * CONTENTS OF THIS FILE OR ANYTHING ELSE.
  * ----------------------------------------------------------------------------
  */
+package ca.rmen.carmailer;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,6 +50,11 @@ import org.jsoup.select.Elements;
 public class CarMailer {
 
     private static final boolean DEBUG = true;
+    // To avoid being detected as spam, don't send too many mails too quickly:
+    // Send mail in batches: Send at most MAX_MAILS_PER_BATCH consecutive mails, and sleep 
+    // DELAY_BETWEEN_BATCHES_S seconds between batches.
+    private static final int MAX_MAILS_PER_BATCH = 100;
+    private static final int DELAY_BETWEEN_BATCHES_S = 60 * 60; // one hour
 
     public static void main(String[] args) throws IOException {
         // Read the arguments given on the command line
@@ -203,6 +209,11 @@ public class CarMailer {
                 transport.connect();
                 transport.sendMessage(message, message.getAllRecipients());
                 transport.close();
+                if (i % MAX_MAILS_PER_BATCH == 0 && i < recipients.size()) {
+                    System.out.println("Sleeping for " + DELAY_BETWEEN_BATCHES_S + " seconds...");
+                    Thread.sleep(DELAY_BETWEEN_BATCHES_S * 1000);
+                }
+
             } catch (Exception e) {
                 System.err.println("Could not send mail to " + recipient);
                 e.printStackTrace();
