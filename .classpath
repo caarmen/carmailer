@@ -4,5 +4,6 @@
 	<classpathentry kind="lib" path="libs/jsoup-1.7.3.jar"/>
 	<classpathentry kind="lib" path="libs/mail.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="libs/guessencoding-1.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
