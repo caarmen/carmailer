@@ -64,8 +64,9 @@ class Parser {
             // If we've forced html format, or we have some real html elements,
             // the body will contain an html part
             if (bodyType == BodyType.HTML || elements.size() > 4) {
-                String text = htmlToText(document);
                 String html = document.outerHtml();
+                charset = document.outputSettings().charset();
+                String text = htmlToText(document);
                 body = new Body(text, html, charset);
             }
             // We're in auto mode and didn't detect real html elements. Use plain text only.
@@ -77,6 +78,7 @@ class Parser {
         else {
             body = new Body(bodyText, null, charset);
         }
+        System.out.println("Body parsed as " + (body.html == null ? "plain text" : "html") + ", with charset " + body.charset);
         return body;
     }
 

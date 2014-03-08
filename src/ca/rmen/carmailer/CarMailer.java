@@ -148,6 +148,7 @@ public class CarMailer {
                 } else {
                     // Just a plain text mail
                     message.setContent(body.text, "text/plain;charset=" + body.charset);
+                    message.setHeader("Content-Transfer-Encoding", "quoted-printable");
                 }
 
                 // Send the mail.
