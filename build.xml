@@ -28,6 +28,7 @@
 				<attribute name="Class-Path" value="." />
 			</manifest>
 			<fileset dir="bin" includes="**/*.class" />
+			<zipfileset excludes="META-INF/*.SF" src="libs/guessencoding-1.4.jar" />
 			<zipfileset excludes="META-INF/*.SF" src="libs/jsoup-1.7.3.jar" />
 			<zipfileset excludes="META-INF/*.SF" src="libs/mail.jar" />
 		</jar>
