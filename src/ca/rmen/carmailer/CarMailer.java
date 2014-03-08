@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import javax.mail.BodyPart;
 import javax.mail.Message;
@@ -42,7 +43,15 @@ import ca.rmen.carmailer.Parser.BodyType;
  */
 public class CarMailer {
 
+    private static final String TAG = CarMailer.class.getSimpleName();
+    // To avoid being detected as spam, don't send too many mails too quickly:
+    // Send mail in batches: Send at most MAX_MAILS_PER_BATCH consecutive mails, and sleep 
+    // DELAY_BETWEEN_BATCHES_S seconds between batches.
+    private static final int MAX_MAILS_PER_BATCH = 100;
+    private static final int DELAY_BETWEEN_BATCHES_S = 60 * 60; // one hour
+
     public static void main(String[] args) throws IOException {
+        Log.init();
         // Read the arguments given on the command line
         final int required_arguments_length = 7;
         if (args.length < required_arguments_length) usage();
@@ -124,7 +133,7 @@ public class CarMailer {
         props.put("mail.smtp.host", smtpServer);
         props.put("mail.smtp.port", smtpServerPort);
         props.put("mail.smtp.auth", "true");
-        props.put("mail.debug", Config.DEBUG);
+        props.put("mail.debug", String.valueOf(Log.LOGGER.isLoggable(Level.FINER)));
         props.put("mail.transport.protocol", "smtp");
         Session mailSession = Session.getInstance(props, new javax.mail.Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
@@ -137,7 +146,7 @@ public class CarMailer {
         // Send one mail to each recipient.
         for (String recipient : recipients) {
             try {
-                System.out.println("Sending to " + (++i) + ": " + recipient);
+                Log.i(TAG, "Sending to " + (++i) + ": " + recipient);
                 MimeMessage message = new MimeMessage(mailSession);
 
                 // Set the subject, from, and to fields.
@@ -164,7 +173,6 @@ public class CarMailer {
                 } else {
                     // Just a plain text mail
                     message.setHeader("Content-Transfer-Encoding", "quoted-printable");
-                    //message.setContent(body.text, "text/plain;charset=" + body.charset);
                     message.setText(body.text, body.charset.name());
                 }
 
@@ -173,14 +181,14 @@ public class CarMailer {
                 transport.connect();
                 transport.sendMessage(message, message.getAllRecipients());
                 transport.close();
-                if (i % Config.MAX_MAILS_PER_BATCH == 0 && i < recipients.size()) {
-                    System.out.println("Sleeping for " + Config.DELAY_BETWEEN_BATCHES_S + " seconds...");
-                    Thread.sleep(Config.DELAY_BETWEEN_BATCHES_S * 1000);
+
+                if (i % MAX_MAILS_PER_BATCH == 0 && i < recipients.size()) {
+                    Log.i(TAG, "Sleeping for " + DELAY_BETWEEN_BATCHES_S + " seconds...");
+                    Thread.sleep(DELAY_BETWEEN_BATCHES_S * 1000);
                 }
 
             } catch (Exception e) {
-                System.err.println("Could not send mail to " + recipient);
-                e.printStackTrace();
+                Log.w(TAG, "Could not send mail to " + recipient, e);
                 break;
             }
         }

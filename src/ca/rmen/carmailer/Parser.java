@@ -16,7 +16,6 @@ package ca.rmen.carmailer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.charset.Charset;
 
 import org.jsoup.Jsoup;
@@ -32,6 +31,8 @@ import com.glaforge.i18n.io.CharsetToolkit;
  * Reads a file, detects the charset, and creates an html and text version of the file.
  */
 class Parser {
+
+    private static final String TAG = Parser.class.getSimpleName();
 
     static class Body {
         final String text;
@@ -82,7 +83,7 @@ class Parser {
         else {
             body = new Body(bodyText, null, charset);
         }
-        System.out.println("Body parsed as " + (body.html == null ? "plain text" : "html") + ", with charset " + body.charset);
+        Log.d(TAG, "Body parsed as " + (body.html == null ? "plain text" : "html") + ", with charset " + body.charset);
         return body;
     }
 
@@ -117,11 +118,8 @@ class Parser {
         textBody = textBody.replaceAll(placeholder + " *", "\n");
 
         // Print the text version of the mail in debug mode.
-        if (Config.DEBUG) {
-            PrintStream stdout = new PrintStream(System.out, true, "UTF-8");
-            System.setOut(stdout);
-            System.out.println(textBody);
-        }
+        String debugTextBody = new String(textBody.getBytes("UTF-8"));
+        Log.d(TAG, debugTextBody);
         return textBody;
     }
 
