@@ -105,9 +105,11 @@ public class CarMailer {
         System.err.println();
         System.err.println("Usage: " + CarMailer.class.getSimpleName()
                 + " [options] <smtp server> <smtp port> <username> <password> <recipients file> <subject> <body file>");
-        System.out.println("options:");
-        System.out.println("--body-type <html|text|auto>: default is auto");
-        System.out.println();
+        System.err.println("options:");
+        System.err.println("--body-type <html|text|auto>: default is auto");
+        System.err
+                .println("--charset <charset>: specify the charset for reading and writing. By default the charset is guessed from the content of the file or the http-equiv meta tag in the html file.");
+        System.err.println();
         System.err.println("*recipients file*: must be a text file containing one e-mail address per line.");
         System.err.println("*body file*: the body of the mail in html or text format.");
         System.exit(1);
