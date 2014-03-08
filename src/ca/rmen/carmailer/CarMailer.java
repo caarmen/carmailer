@@ -14,6 +14,7 @@
 package ca.rmen.carmailer;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Properties;
 
@@ -43,19 +44,34 @@ public class CarMailer {
 
     public static void main(String[] args) throws IOException {
         // Read the arguments given on the command line
-        if (args.length < 7) usage();
+        final int required_arguments_length = 7;
+        if (args.length < required_arguments_length) usage();
         int i = 0;
 
         BodyType bodyType = BodyType.AUTO;
-        if (args[i].equals("--body-type")) {
-            try {
-                bodyType = BodyType.valueOf(args[++i].toUpperCase());
-                i++;
-            } catch (IllegalArgumentException e) {
-                usage();
+        Charset charset = null;
+        for (i = 0; i < args.length - required_arguments_length; i++) {
+            if (args[i].equals("--body-type")) {
+                try {
+                    bodyType = BodyType.valueOf(args[++i].toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    usage();
+                }
+            } else if (args[i].equals("--charset")) {
+                String charsetName = args[++i];
+                try {
+                    charset = Charset.forName(charsetName);
+                } catch (IllegalArgumentException e) {
+                    System.err.println("Invalid charset " + charset);
+                    System.exit(1);
+                }
+            } else {
+                break;
             }
         }
-        if (args.length - i != 7) usage();
+        // We've gone through all the optional arguments, make sure
+        // we have all the required ones.
+        if (args.length - i != required_arguments_length) usage();
         String smtpServer = args[i++];
         int smtpPort = Integer.valueOf(args[i++]);
         String userName = args[i++];
@@ -68,7 +84,7 @@ public class CarMailer {
         List<String> recipients = IOUtils.readLines(recipientsFilePath);
 
         // Parse the mail body.
-        Body body = Parser.parse(bodyFilePath, bodyType);
+        Body body = Parser.parse(bodyFilePath, bodyType, charset);
         sendEmail(smtpServer, smtpPort, userName, password, recipients, subject, body);
     }
 
@@ -147,8 +163,9 @@ public class CarMailer {
                     message.setContent(mp);
                 } else {
                     // Just a plain text mail
-                    message.setContent(body.text, "text/plain;charset=" + body.charset);
                     message.setHeader("Content-Transfer-Encoding", "quoted-printable");
+                    //message.setContent(body.text, "text/plain;charset=" + body.charset);
+                    message.setText(body.text, body.charset.name());
                 }
 
                 // Send the mail.

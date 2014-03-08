@@ -52,11 +52,15 @@ class Parser {
 
     /**
      * Read the file at the given path, and return a Body with the text and html versions of the file.
+     * 
+     * @param charset if null, we will determine the guess the charset, or if this is an html file which
+     *            explicitly declares the charset, we will use it. Otherwise we will use the given charset.
      */
-    static Body parse(String filePath, BodyType bodyType) throws FileNotFoundException, IOException {
+    static Body parse(String filePath, BodyType bodyType, Charset charset) throws FileNotFoundException, IOException {
         final Body body;
         File bodyFile = new File(filePath);
-        Charset charset = CharsetToolkit.guessEncoding(bodyFile, 1024);
+        boolean shouldGuessCharset = charset == null;
+        if (shouldGuessCharset) charset = CharsetToolkit.guessEncoding(bodyFile, 1024);
         String bodyText = IOUtils.readFile(bodyFile, charset);
         if (bodyType == BodyType.HTML || bodyType == BodyType.AUTO) {
             Document document = Jsoup.parse(bodyFile, null);
@@ -65,7 +69,7 @@ class Parser {
             // the body will contain an html part
             if (bodyType == BodyType.HTML || elements.size() > 4) {
                 String html = document.outerHtml();
-                charset = document.outputSettings().charset();
+                if (shouldGuessCharset) charset = document.outputSettings().charset();
                 String text = htmlToText(document);
                 body = new Body(text, html, charset);
             }

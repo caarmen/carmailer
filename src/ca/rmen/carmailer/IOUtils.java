@@ -45,7 +45,7 @@ public class IOUtils {
             is.close();
             os.close();
         }
-        return os.toString();
+        return os.toString(charset.name());
     }
 
     /**
