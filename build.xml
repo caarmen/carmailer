@@ -22,7 +22,6 @@
 	<target name="dist" description="generate the distribution">
 		<javac srcdir="${src}" destdir="${bin}" classpathref="classpath" includeantruntime="false" />
 		<tstamp />
-		<!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
 		<jar destfile="${bin}/carmailer-${DSTAMP}-${TSTAMP}.jar" filesetmanifest="mergewithoutmain">
 			<manifest>
 				<attribute name="Main-Class" value="ca.rmen.carmailer.CarMailer" />
