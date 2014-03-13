@@ -49,7 +49,8 @@ public class IOUtils {
     }
 
     /**
-     * @return a list of lines in the given file. Lines which begin with # are considered to be commented out and are ignored
+     * @return a list of lines in the given file. Lines which begin with # are considered to be commented out and are ignored.
+     *         Empty lines are also ignored.
      * @throws IOException
      */
     static List<String> readLines(String filePath) throws IOException {
@@ -58,6 +59,7 @@ public class IOUtils {
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
             line = line.trim();
             if (line.startsWith("#")) continue;
+            if (line.isEmpty()) continue;
             result.add(line);
         }
         reader.close();
