@@ -50,6 +50,13 @@ public class CarMailer {
     private static final int MAX_MAILS_PER_BATCH = 100;
     private static final int DELAY_BETWEEN_BATCHES_S = 60 * 60; // one hour
 
+    static class SmtpCredentials {
+        String serverName;
+        int port;
+        String userName;
+        String password;
+    }
+
     public static void main(String[] args) throws IOException {
         Log.init();
         // Read the arguments given on the command line
@@ -59,6 +66,7 @@ public class CarMailer {
 
         BodyType bodyType = BodyType.AUTO;
         Charset charset = null;
+        String from = null;
         for (i = 0; i < args.length - required_arguments_length; i++) {
             if (args[i].equals("--body-type")) {
                 try {
@@ -74,6 +82,8 @@ public class CarMailer {
                     System.err.println("Invalid charset " + charset);
                     System.exit(1);
                 }
+            } else if (args[i].equals("--from")) {
+                from = args[++i];
             } else {
                 break;
             }
@@ -81,20 +91,23 @@ public class CarMailer {
         // We've gone through all the optional arguments, make sure
         // we have all the required ones.
         if (args.length - i != required_arguments_length) usage();
-        String smtpServer = args[i++];
-        int smtpPort = Integer.valueOf(args[i++]);
-        String userName = args[i++];
-        String password = args[i++];
+        SmtpCredentials credentials = new SmtpCredentials();
+        credentials.serverName = args[i++];
+        credentials.port = Integer.valueOf(args[i++]);
+        credentials.userName = args[i++];
+        credentials.password = args[i++];
         String recipientsFilePath = args[i++];
         String subject = args[i++];
         String bodyFilePath = args[i++];
+
+        if (from == null) from = credentials.userName;
 
         // Read the file with the list of e-mail addresses
         List<String> recipients = IOUtils.readLines(recipientsFilePath);
 
         // Parse the mail body.
         Body body = Parser.parse(bodyFilePath, bodyType, charset);
-        sendEmail(smtpServer, smtpPort, userName, password, recipients, subject, body);
+        sendEmail(credentials, from, recipients, subject, body);
     }
 
     /**
@@ -106,7 +119,8 @@ public class CarMailer {
         System.err.println("Usage: " + CarMailer.class.getSimpleName()
                 + " [options] <smtp server> <smtp port> <username> <password> <recipients file> <subject> <body file>");
         System.err.println("options:");
-        System.err.println("--body-type <html|text|auto>: default is auto");
+        System.err.println("--from <from>: the value of the From: field.  By default, the username is used.");
+        System.err.println("--body-type <html|text|auto>: Default is auto.");
         System.err
                 .println("--charset <charset>: specify the charset for reading and writing. By default the charset is guessed from the content of the file or the http-equiv meta tag in the html file.");
         System.err.println();
@@ -127,19 +141,18 @@ public class CarMailer {
      * @param subject the subject of the mail
      * @param body the content of the mail
      */
-    private static void sendEmail(String smtpServer, int smtpServerPort, final String userName, final String password, List<String> recipients, String subject,
-            Body body) {
+    private static void sendEmail(final SmtpCredentials credentials, String from, List<String> recipients, String subject, Body body) {
 
         // Set up properties for mail sending.
         Properties props = new Properties();
-        props.put("mail.smtp.host", smtpServer);
-        props.put("mail.smtp.port", smtpServerPort);
+        props.put("mail.smtp.host", credentials.serverName);
+        props.put("mail.smtp.port", credentials.port);
         props.put("mail.smtp.auth", "true");
         props.put("mail.debug", String.valueOf(Log.LOGGER.isLoggable(Level.FINER)));
         props.put("mail.transport.protocol", "smtp");
         Session mailSession = Session.getInstance(props, new javax.mail.Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(userName, password);
+                return new PasswordAuthentication(credentials.userName, credentials.password);
             }
         });
 
@@ -153,7 +166,7 @@ public class CarMailer {
 
                 // Set the subject, from, and to fields.
                 message.setSubject(MimeUtility.encodeText(subject, body.charset.name(), "Q"));
-                message.setFrom(new InternetAddress(userName));
+                message.setFrom(new InternetAddress(from));
                 message.addRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
 
                 // Construct the mail.
