@@ -22,7 +22,7 @@
 	<target name="dist" description="generate the distribution">
 		<javac srcdir="${src}" destdir="${bin}" classpathref="classpath" includeantruntime="false" />
 		<tstamp />
-		<jar destfile="${bin}/carmailer-${DSTAMP}-${TSTAMP}.jar" filesetmanifest="mergewithoutmain">
+		<jar destfile="${bin}/carmailer.jar" filesetmanifest="mergewithoutmain">
 			<manifest>
 				<attribute name="Main-Class" value="ca.rmen.carmailer.CarMailer" />
 				<attribute name="Class-Path" value="." />
@@ -32,6 +32,7 @@
 			<zipfileset excludes="META-INF/*.SF" src="libs/jsoup-1.7.3.jar" />
 			<zipfileset excludes="META-INF/*.SF" src="libs/mail.jar" />
 		</jar>
+		<copy tofile="${bin}/carmailer-${DSTAMP}-${TSTAMP}.jar" file="${bin}/carmailer.jar" />
 	</target>
 
 
