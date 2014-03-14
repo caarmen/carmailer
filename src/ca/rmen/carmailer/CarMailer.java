@@ -13,6 +13,8 @@
  */
 package ca.rmen.carmailer;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -68,6 +70,8 @@ public class CarMailer {
         BodyType bodyType = BodyType.AUTO;
         Charset charset = null;
         String from = null;
+        File outputFolder = null;
+        boolean dryRun = false;
         for (i = 0; i < args.length - required_arguments_length; i++) {
             if (args[i].equals("--body-type")) {
                 try {
@@ -85,6 +89,15 @@ public class CarMailer {
                 }
             } else if (args[i].equals("--from")) {
                 from = args[++i];
+            } else if (args[i].equals("--output-folder")) {
+                String outputFolderName = args[++i];
+                outputFolder = new File(outputFolderName);
+                if (!outputFolder.isDirectory() && !outputFolder.mkdir()) {
+                    System.err.println(outputFolderName + " does not exist and cannot be created");
+                    System.exit(1);
+                }
+            } else if (args[i].equals("--dry-run")) {
+                dryRun = true;
             } else {
                 break;
             }
@@ -109,7 +122,7 @@ public class CarMailer {
 
         // Read the file with the list of e-mail addresses
         List<Recipient> recipients = Parser.parseRecipients(recipientsFilePath, body.charset);
-        sendEmail(credentials, from, recipients, subject, body);
+        sendEmail(credentials, from, recipients, subject, body, dryRun, outputFolder);
     }
 
     /**
@@ -122,7 +135,9 @@ public class CarMailer {
                 + " [options] <smtp server> <smtp port> <username> <password> <recipients file> <subject> <body file>");
         System.err.println("options:");
         System.err.println("--from <from>: the value of the From: field.  By default, the username is used.");
+        System.err.println("--dry-run: if true, no mail will actually be sent.");
         System.err.println("--body-type <html|text|auto>: Default is auto.");
+        System.err.println("--output-folder <path>: if specified, each mail will be written to a file in this folder");
         System.err
                 .println("--charset <charset>: specify the charset for reading and writing. By default the charset is guessed from the content of the file or the http-equiv meta tag in the html file.");
         System.err.println();
@@ -135,15 +150,15 @@ public class CarMailer {
     /**
      * Send a mail to a list of recipients. One mail will be sent to each recipient. The recipient will be on the To: field of the mail.
      * 
-     * @param smtpServer the address of the SMTP server.
-     * @param smtpServerPort the port of the SMTP server.
-     * @param userName the user name of the sender account on the SMTP server.
-     * @param password the password of the sender account on the SMTP server.
+     * @param credientials the authentication parameters for the SMTP server
+     * @param from the value of the From: header
      * @param recipients the list of recipients.
      * @param subject the subject of the mail
      * @param body the content of the mail
+     * @param dryRun if true, no mail will be sent: only traces will be logged.
      */
-    private static void sendEmail(final SmtpCredentials credentials, String from, List<Recipient> recipients, String subject, Body body) {
+    private static void sendEmail(final SmtpCredentials credentials, String from, List<Recipient> recipients, String subject, Body body, boolean dryRun,
+            File outputFolder) {
 
         // Set up properties for mail sending.
         Properties props = new Properties();
@@ -199,15 +214,23 @@ public class CarMailer {
                     message.setText(bodyText, body.charset.name());
                 }
 
+                if (outputFolder != null) {
+                    File file = new File(outputFolder, recipient.address + ".eml");
+                    FileOutputStream os = new FileOutputStream(file);
+                    message.writeTo(os);
+                    os.close();
+                }
                 // Send the mail.
-                Transport transport = mailSession.getTransport();
-                transport.connect();
-                transport.sendMessage(message, message.getAllRecipients());
-                transport.close();
+                if (!dryRun) {
+                    Transport transport = mailSession.getTransport();
+                    transport.connect();
+                    transport.sendMessage(message, message.getAllRecipients());
+                    transport.close();
 
-                if (i % MAX_MAILS_PER_BATCH == 0 && i < recipients.size()) {
-                    Log.i(TAG, "Sleeping for " + DELAY_BETWEEN_BATCHES_S + " seconds...");
-                    Thread.sleep(DELAY_BETWEEN_BATCHES_S * 1000);
+                    if (i % MAX_MAILS_PER_BATCH == 0 && i < recipients.size()) {
+                        Log.i(TAG, "Sleeping for " + DELAY_BETWEEN_BATCHES_S + " seconds...");
+                        Thread.sleep(DELAY_BETWEEN_BATCHES_S * 1000);
+                    }
                 }
 
             } catch (Exception e) {
