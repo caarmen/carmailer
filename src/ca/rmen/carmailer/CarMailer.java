@@ -33,6 +33,7 @@ import javax.mail.internet.MimeUtility;
 
 import ca.rmen.carmailer.Parser.Body;
 import ca.rmen.carmailer.Parser.BodyType;
+import ca.rmen.carmailer.Parser.Recipient;
 
 /**
  * This class requires the JavaMail and JSoup libraries.
@@ -102,11 +103,12 @@ public class CarMailer {
 
         if (from == null) from = credentials.userName;
 
-        // Read the file with the list of e-mail addresses
-        List<String> recipients = IOUtils.readLines(recipientsFilePath);
 
         // Parse the mail body.
         Body body = Parser.parse(bodyFilePath, bodyType, charset);
+
+        // Read the file with the list of e-mail addresses
+        List<Recipient> recipients = Parser.parseRecipients(recipientsFilePath, body.charset);
         sendEmail(credentials, from, recipients, subject, body);
     }
 
@@ -141,7 +143,7 @@ public class CarMailer {
      * @param subject the subject of the mail
      * @param body the content of the mail
      */
-    private static void sendEmail(final SmtpCredentials credentials, String from, List<String> recipients, String subject, Body body) {
+    private static void sendEmail(final SmtpCredentials credentials, String from, List<Recipient> recipients, String subject, Body body) {
 
         // Set up properties for mail sending.
         Properties props = new Properties();
@@ -159,15 +161,21 @@ public class CarMailer {
 
         int i = 0;
         // Send one mail to each recipient.
-        for (String recipient : recipients) {
+        for (Recipient recipient : recipients) {
             try {
-                Log.i(TAG, "Sending to " + (++i) + ": " + recipient);
+                Log.i(TAG, "Sending to " + (++i) + ": " + recipient.address + ".");
+                String bodyText = body.text;
+                String bodyHtml = body.html;
+                for (int tagIndex = 0; tagIndex < recipient.tags.length; tagIndex++) {
+                    bodyText = bodyText.replaceAll("%" + (tagIndex + 1), recipient.tags[tagIndex]);
+                    bodyHtml = bodyHtml.replaceAll("%" + (tagIndex + 1), recipient.tags[tagIndex]);
+                }
                 MimeMessage message = new MimeMessage(mailSession);
 
                 // Set the subject, from, and to fields.
                 message.setSubject(MimeUtility.encodeText(subject, body.charset.name(), "Q"));
                 message.setFrom(new InternetAddress(from));
-                message.addRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
+                message.addRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient.address));
 
                 // Construct the mail.
                 // If we have both html and text, do a multipart mail with two bodyparts
@@ -176,19 +184,19 @@ public class CarMailer {
                     Multipart mp = new MimeMultipart("alternative");
                     // Add the plain text version of the mail
                     BodyPart bp = new MimeBodyPart();
-                    bp.setContent(body.text, "text/plain;charset=" + body.charset);
+                    bp.setContent(bodyText, "text/plain;charset=" + body.charset);
                     bp.setHeader("Content-Transfer-Encoding", "quoted-printable");
                     mp.addBodyPart(bp);
                     // Add the html version of the mail
                     bp = new MimeBodyPart();
-                    bp.setContent(body.html, "text/html;charset=" + body.charset);
+                    bp.setContent(bodyHtml, "text/html;charset=" + body.charset);
                     bp.setHeader("Content-Transfer-Encoding", "quoted-printable");
                     mp.addBodyPart(bp);
                     message.setContent(mp);
                 } else {
                     // Just a plain text mail
                     message.setHeader("Content-Transfer-Encoding", "quoted-printable");
-                    message.setText(body.text, body.charset.name());
+                    message.setText(bodyText, body.charset.name());
                 }
 
                 // Send the mail.
@@ -203,7 +211,7 @@ public class CarMailer {
                 }
 
             } catch (Exception e) {
-                Log.w(TAG, "Could not send mail to " + recipient, e);
+                Log.e(TAG, "Could not send mail to " + recipient + ": " + e.getMessage(), e);
                 break;
             }
         }

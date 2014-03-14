@@ -53,8 +53,8 @@ public class IOUtils {
      *         Empty lines are also ignored.
      * @throws IOException
      */
-    static List<String> readLines(String filePath) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)));
+    static List<String> readLines(String filePath, Charset charset) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), charset));
         List<String> result = new ArrayList<String>();
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
             line = line.trim();

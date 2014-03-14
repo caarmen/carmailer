@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -49,6 +51,19 @@ class Parser {
     static enum BodyType {
         HTML, TEXT, AUTO
     };
+
+    /**
+     * A recipient has an e-mail address and an optional set of tags. These tags will replace variables like %1, %2, %3, etc, in the mail content.
+     */
+    static class Recipient {
+        final String address;
+        final String[] tags;
+
+        Recipient(String address, String[] tags) {
+            this.address = address;
+            this.tags = tags;
+        }
+    }
 
 
     /**
@@ -121,6 +136,22 @@ class Parser {
         String debugTextBody = new String(textBody.getBytes("UTF-8"));
         Log.d(TAG, debugTextBody);
         return textBody;
+    }
+
+    /**
+     * @param filePath path to a file containing one line per recipient. Each line contains an e-mail address, and optionally some tags separated by |.
+     */
+    static List<Recipient> parseRecipients(String filePath, Charset charset) throws IOException {
+        List<Recipient> recipients = new ArrayList<Recipient>();
+        List<String> lines = IOUtils.readLines(filePath, charset);
+        for (String line : lines) {
+            String[] split = line.split("\\|", -1);
+            String[] tags = new String[split.length - 1];
+            System.arraycopy(split, 1, tags, 0, tags.length);
+            Recipient recipient = new Recipient(split[0], tags);
+            recipients.add(recipient);
+        }
+        return recipients;
     }
 
 }
