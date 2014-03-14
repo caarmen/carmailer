@@ -20,6 +20,7 @@
 	</path>
 
 	<target name="dist" description="generate the distribution">
+		<mkdir dir="${bin}"/>
 		<javac srcdir="${src}" destdir="${bin}" classpathref="classpath" includeantruntime="false" />
 		<tstamp />
 		<jar destfile="${bin}/carmailer.jar" filesetmanifest="mergewithoutmain">
