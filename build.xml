@@ -9,7 +9,7 @@
  MONEY, RELATIONSHIPS, OR GENERAL MENTAL OR PHYSICAL HEALTH CAUSED BY THE
  CONTENTS OF THIS FILE OR ANYTHING ELSE.
  -->
-<project name="carmailer" default="dist" basedir=".">
+<project name="carmailer" default="jar" basedir=".">
 	<!-- set global properties for this build -->
 	<property name="src" location="src" />
 	<property name="bin" location="bin" />
@@ -19,23 +19,28 @@
 		<fileset dir="${libs}" includes="**/*.jar" />
 	</path>
 
-	<target name="dist" description="generate the distribution">
-		<mkdir dir="${bin}"/>
-		<javac srcdir="${src}" destdir="${bin}" classpathref="classpath" includeantruntime="false" debug="true" debuglevel="lines,vars,source"/>
-		<tstamp />
+	<target name="jar" description="create the carmailer.jar file">
+		<mkdir dir="${bin}" />
+		<!-- Compile -->
+		<javac srcdir="${src}" destdir="${bin}" classpathref="classpath" includeantruntime="false" debug="true" debuglevel="lines,vars,source" />
+		<!-- Create the carmailer.jar file -->
 		<jar destfile="${bin}/carmailer.jar" filesetmanifest="mergewithoutmain">
 			<manifest>
 				<attribute name="Main-Class" value="ca.rmen.carmailer.Main" />
 				<attribute name="Class-Path" value="." />
 			</manifest>
 			<fileset dir="bin" includes="**/*.class" />
-			<zipfileset excludes="META-INF/*.SF" src="libs/guessencoding-1.4.jar" />
-			<zipfileset excludes="META-INF/*.SF" src="libs/jsoup-1.7.3.jar" />
-			<zipfileset excludes="META-INF/*.SF" src="libs/mail.jar" />
+			<zipfileset excludes="META-INF/*.SF" src="${libs}/guessencoding-1.4.jar" />
+			<zipfileset excludes="META-INF/*.SF" src="${libs}/jsoup-1.7.3.jar" />
+			<zipfileset excludes="META-INF/*.SF" src="${libs}/mail.jar" />
 		</jar>
-		<copy tofile="${bin}/carmailer-${DSTAMP}-${TSTAMP}.jar" file="${bin}/carmailer.jar" />
 	</target>
 
+	<target name="dist" description="create a carmailer-XXX.jar file with the current timestamp" depends="jar">
+		<tstamp />
+		<!-- Copy the carmailer.jar file to another file with the current timestamp -->
+		<copy tofile="${bin}/carmailer-${DSTAMP}-${TSTAMP}.jar" file="${bin}/carmailer.jar" />
+	</target>
 
 	<target name="clean" description="clean up">
 		<delete dir="${bin}" />
