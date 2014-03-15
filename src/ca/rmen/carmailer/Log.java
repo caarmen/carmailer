@@ -27,7 +27,7 @@ import java.util.logging.Logger;
  * 
  * The wrapping methods look a lot like Android...
  */
-public class Log {
+class Log {
 
     static final Logger LOGGER = Logger.getLogger(CarMailer.class.getPackage().getName());
     private static final Level LEVEL = Level.FINE;
@@ -56,7 +56,7 @@ public class Log {
         }
     }
 
-    static void v(String tag, String message) {
+    static void v(String tag, String message) { // NO_UCD (unused code)
         log(Level.FINER, tag, message, null);
     }
 
@@ -68,7 +68,7 @@ public class Log {
         log(Level.INFO, tag, message, null);
     }
 
-    static void w(String tag, String message, Throwable t) {
+    static void w(String tag, String message, Throwable t) { // NO_UCD (unused code)
         log(Level.WARNING, tag, message, t);
     }
 

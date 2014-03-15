@@ -39,7 +39,7 @@ import ca.rmen.carmailer.Parser.Recipient;
  * 
  * Send a mail in HTML or plain text format to a list of recipients.
  */
-public class CarMailer {
+class CarMailer {
 
     private static final String TAG = CarMailer.class.getSimpleName();
     // To avoid being detected as spam, don't send too many mails too quickly:
@@ -66,7 +66,7 @@ public class CarMailer {
      * @param body the content of the mail
      * @param dryRun if true, no mail will be sent: only traces will be logged.
      */
-    public static void sendEmail(final SmtpCredentials credentials, String from, List<Recipient> recipients, String subject, Body body, boolean dryRun,
+    static void sendEmail(final SmtpCredentials credentials, String from, List<Recipient> recipients, String subject, Body body, boolean dryRun,
             File outputFolder) {
 
         // Set up properties for mail sending.

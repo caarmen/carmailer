@@ -41,7 +41,7 @@ class Parser {
         final String html;
         final Charset charset;
 
-        Body(String text, String html, Charset charset) {
+        private Body(String text, String html, Charset charset) {
             this.text = text;
             this.html = html;
             this.charset = charset;
@@ -59,7 +59,7 @@ class Parser {
         final String address;
         final String[] tags;
 
-        Recipient(String address, String[] tags) {
+        private Recipient(String address, String[] tags) {
             this.address = address;
             this.tags = tags;
         }

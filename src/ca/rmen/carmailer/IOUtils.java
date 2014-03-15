@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Utility methods for reading files.
  */
-public class IOUtils {
+class IOUtils {
     /**
      * @return the contents of the given file
      */
