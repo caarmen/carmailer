@@ -25,7 +25,7 @@
 		<tstamp />
 		<jar destfile="${bin}/carmailer.jar" filesetmanifest="mergewithoutmain">
 			<manifest>
-				<attribute name="Main-Class" value="ca.rmen.carmailer.CarMailer" />
+				<attribute name="Main-Class" value="ca.rmen.carmailer.Main" />
 				<attribute name="Class-Path" value="." />
 			</manifest>
 			<fileset dir="bin" includes="**/*.class" />
