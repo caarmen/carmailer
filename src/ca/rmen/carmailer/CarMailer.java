@@ -165,6 +165,7 @@ public class CarMailer {
         props.put("mail.smtp.host", credentials.serverName);
         props.put("mail.smtp.port", credentials.port);
         props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable","true");
         props.put("mail.debug", String.valueOf(Log.LOGGER.isLoggable(Level.FINER)));
         props.put("mail.transport.protocol", "smtp");
         Session mailSession = Session.getInstance(props, new javax.mail.Authenticator() {
@@ -183,7 +184,8 @@ public class CarMailer {
                 String bodyHtml = body.html;
                 for (int tagIndex = 0; tagIndex < recipient.tags.length; tagIndex++) {
                     bodyText = bodyText.replaceAll("%" + (tagIndex + 1), recipient.tags[tagIndex]);
-                    bodyHtml = bodyHtml.replaceAll("%" + (tagIndex + 1), recipient.tags[tagIndex]);
+                    if(bodyHtml != null)
+                        bodyHtml = bodyHtml.replaceAll("%" + (tagIndex + 1), recipient.tags[tagIndex]);
                 }
                 MimeMessage message = new MimeMessage(mailSession);
 
@@ -235,6 +237,7 @@ public class CarMailer {
 
             } catch (Exception e) {
                 Log.e(TAG, "Could not send mail to " + recipient + ": " + e.getMessage(), e);
+                e.printStackTrace(); // Why doesn't this show up in the logs?
                 break;
             }
         }
