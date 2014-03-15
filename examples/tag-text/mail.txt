@@ -1,0 +1,8 @@
+Hi there, %1!
+
+CarMailer is a pretty cool program to send out mails to a list of people.
+
+Keep up the good work!
+
+Sincerely,
+A tester
