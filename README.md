@@ -15,3 +15,16 @@ If the mail content is HTML, then the e-mail will be sent as a multi-part mail i
 If the mail content is plain text, then the e-mail will be sent as plain text.
 
 To prevent spam, messages are sent in batches, with a delay between each batch.
+
+
+Usage:
+-----
+1. Build: 
+
+
+    ant dist
+
+2. Run with no arguments to see the usage:
+
+
+    java -jar bin/carmailer.jar
