@@ -21,7 +21,7 @@
 
 	<target name="dist" description="generate the distribution">
 		<mkdir dir="${bin}"/>
-		<javac srcdir="${src}" destdir="${bin}" classpathref="classpath" includeantruntime="false" />
+		<javac srcdir="${src}" destdir="${bin}" classpathref="classpath" includeantruntime="false" debug="true" debuglevel="lines,vars,source"/>
 		<tstamp />
 		<jar destfile="${bin}/carmailer.jar" filesetmanifest="mergewithoutmain">
 			<manifest>
