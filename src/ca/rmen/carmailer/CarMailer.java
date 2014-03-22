@@ -16,6 +16,9 @@ package ca.rmen.carmailer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -43,7 +46,6 @@ class CarMailer {
 
     private static final String TAG = CarMailer.class.getSimpleName();
 
-
     /**
      * Send a mail to a list of recipients. One mail will be sent to each recipient. The recipient will be on the To: field of the mail.
      * 
@@ -52,6 +54,7 @@ class CarMailer {
      * @param sendOptions settings for sending the mails.
      */
     static void sendEmail(final SmtpCredentials credentials, Mail mail, SendOptions sendOptions) {
+        Log.v(TAG, "sendEmail: credentials = " + credentials + ", mail = " + mail + ", sendOptions = " + sendOptions);
 
         // Set up properties for mail sending.
         Properties props = new Properties();
@@ -67,8 +70,8 @@ class CarMailer {
             }
         });
 
-
         int i = 0;
+        List<Recipient> failedRecipients = new ArrayList<Recipient>();
         // Send one mail to each recipient.
         for (Recipient recipient : mail.recipients) {
             try {
@@ -86,10 +89,28 @@ class CarMailer {
                 if (!sendOptions.dryRun) {
                     Transport transport = mailSession.getTransport();
                     transport.connect();
-                    transport.sendMessage(message, message.getAllRecipients());
+                    try {
+                        transport.sendMessage(message, message.getAllRecipients());
+                    } catch (MessagingException e) {
+                        Log.e(TAG, "Could not send mail to " + recipient + ": " + e.getMessage(), e);
+                        e.printStackTrace(); // Why doesn't this show up in the logs?
+                        failedRecipients.add(recipient);
+                    }
+
+                    // We've sent all the mails in one batch
+                    boolean batchEnd = i % sendOptions.maxMailsPerBatch == 0;
+                    // We've sent all the mails, total.
+                    boolean end = i == mail.recipients.size();
+
+                    // Send a progress mail at the end of the batch or the end of all mails.
+                    if ((batchEnd || end) && sendOptions.statusEmailAddress != null) {
+                        sendStatusMessage(transport, mailSession, mail, sendOptions.statusEmailAddress, i, failedRecipients);
+                    }
                     transport.close();
 
-                    if (i % sendOptions.maxMailsPerBatch == 0 && i < mail.recipients.size()) {
+                    // If we're at the end of the batch, but not at the end of all mails,
+                    // sleep until we start the next batch.
+                    if (batchEnd && !end) {
                         Log.i(TAG, "Sleeping for " + sendOptions.delayBetweenBatches + " seconds...");
                         Thread.sleep(sendOptions.delayBetweenBatches * 1000);
                     }
@@ -98,7 +119,7 @@ class CarMailer {
             } catch (Exception e) {
                 Log.e(TAG, "Could not send mail to " + recipient + ": " + e.getMessage(), e);
                 e.printStackTrace(); // Why doesn't this show up in the logs?
-                break;
+                failedRecipients.add(recipient);
             }
         }
     }
@@ -150,4 +171,27 @@ class CarMailer {
         return message;
     }
 
+    /**
+     * Send the progress of our mail sending to the given to address.
+     */
+    private static void sendStatusMessage(Transport transport, Session mailSession, Mail mail, String to, int messagesSent, List<Recipient> failedRecipients)
+            throws UnsupportedEncodingException, MessagingException {
+        Log.i(TAG, "sending status e-mail from " + mail.from + " to " + to + ", " + messagesSent + " messages sent");
+        int totalRecipientCount = mail.recipients.size();
+        String subject = messagesSent + " of " + totalRecipientCount + " sent: \"" + mail.subject + "\"";
+        StringBuilder bodyBuilder = new StringBuilder();
+        bodyBuilder.append("Sent " + messagesSent + " messages out of " + totalRecipientCount + ".");
+        bodyBuilder.append("\n\n");
+        if (failedRecipients.isEmpty()) {
+            bodyBuilder.append("No critical failures.\n");
+        } else {
+            bodyBuilder.append(failedRecipients.size() + " failures:\n\n");
+            for (Recipient failedRecipient : failedRecipients)
+                bodyBuilder.append(failedRecipient + "\n");
+        }
+        Body statusBody = new Body(bodyBuilder.toString(), null, Charset.defaultCharset());
+        Recipient statusRecipient = new Recipient(to, null);
+        Message statusMessage = createMessage(mailSession, statusRecipient, mail.from, subject, statusBody);
+        transport.sendMessage(statusMessage, statusMessage.getAllRecipients());
+    }
 }

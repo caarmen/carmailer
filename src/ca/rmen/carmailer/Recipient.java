@@ -24,7 +24,7 @@ class Recipient {
 
     Recipient(String address, String[] tags) {
         this.address = address;
-        this.tags = tags;
+        this.tags = tags == null ? new String[0] : tags;
     }
 
     @Override

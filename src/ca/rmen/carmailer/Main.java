@@ -15,7 +15,10 @@ package ca.rmen.carmailer;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.Charset;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.util.List;
 
 import ca.rmen.carmailer.Mail.Body;
@@ -37,6 +40,9 @@ public class Main {
         Charset charset = null;
         String from = null;
         File outputFolder = null;
+        int maxMailsPerBatch = 100;
+        int delayBetweenBatchesS = 60 * 60; // 1 hour
+        String statusEmailAddress = null;
         boolean dryRun = false;
         for (i = 0; i < args.length - required_arguments_length; i++) {
             if (args[i].equals("--body-type")) {
@@ -64,6 +70,12 @@ public class Main {
                 }
             } else if (args[i].equals("--dry-run")) {
                 dryRun = true;
+            } else if (args[i].equals("--batch-size")) {
+                maxMailsPerBatch = Integer.valueOf(args[++i]);
+            } else if (args[i].equals("--batch-delay")) {
+                delayBetweenBatchesS = Integer.valueOf(args[++i]);
+            } else if (args[i].equals("--send-progress")) {
+                statusEmailAddress = args[++i];
             } else {
                 break;
             }
@@ -82,14 +94,13 @@ public class Main {
 
         if (from == null) from = credentials.userName;
 
-
         // Parse the mail body.
         Body body = Parser.parse(bodyFilePath, bodyType, charset);
 
         // Read the file with the list of e-mail addresses
         List<Recipient> recipients = Parser.parseRecipients(recipientsFilePath, body.charset);
         Mail mail = new Mail(from, recipients, subject, body);
-        SendOptions sendOptions = new SendOptions(dryRun, outputFolder);
+        SendOptions sendOptions = new SendOptions(dryRun, outputFolder, statusEmailAddress, maxMailsPerBatch, delayBetweenBatchesS);
         CarMailer.sendEmail(credentials, mail, sendOptions);
     }
 
@@ -99,12 +110,14 @@ public class Main {
     private static void usage() {
         System.err.println("Send an html file by e-mail to a list of recipients.");
         System.err.println();
-        System.err.println("Usage: " + CarMailer.class.getSimpleName()
-                + " [options] <smtp server> <smtp port> <username> <password> <recipients file> <subject> <body file>");
+        System.err.println("Usage: " + getProgramName() + " [options] <smtp server> <smtp port> <username> <password> <recipients file> <subject> <body file>");
         System.err.println("options:");
         System.err.println("--from <from>: the value of the From: field.  By default, the username is used.");
         System.err.println("--dry-run: if true, no mail will actually be sent.");
         System.err.println("--body-type <html|text|auto>: Default is auto.");
+        System.err.println("--batch-size <n>: send at most n mails in a batch. Default: 100 mails");
+        System.err.println("--batch-delay <s>: wait s seconds between sending batches. Default: 3600s (1 hour)");
+        System.err.println("--send-progress <email address>: Send the progress at the end of each batch, and end status to this e-mail address");
         System.err.println("--output-folder <path>: if specified, each mail will be written to a file in this folder");
         System.err
                 .println("--charset <charset>: specify the charset for reading and writing. By default the charset is guessed from the content of the file or the http-equiv meta tag in the html file.");
@@ -114,4 +127,31 @@ public class Main {
         System.exit(1);
     }
 
+    /**
+     * Try to return a string like "java -jar bin/carmailer.jar" to be used within the usage.
+     */
+    private static String getProgramName() {
+        try {
+            ProtectionDomain protectionDomain = Main.class.getProtectionDomain();
+            if (protectionDomain != null) {
+                CodeSource codeSource = protectionDomain.getCodeSource();
+                if (codeSource != null) {
+                    URL location = codeSource.getLocation();
+                    if (location != null) {
+                        String path = location.getPath();
+                        if (path != null) {
+                            File file = new File(path);
+                            if (file.isFile()) {
+                                String relativeFile = new File(".").toURI().relativize(file.toURI()).getPath();
+                                return "java -jar " + relativeFile;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            // don't really care
+        }
+        return "java " + Main.class.getName();
+    }
 }

@@ -22,23 +22,29 @@ class SendOptions {
 
     final boolean dryRun;
     final File outputFolder;
+    final String statusEmailAddress;
     // To avoid being detected as spam, don't send too many mails too quickly:
     // Send mail in batches: Send at most maxMailsPerBatch consecutive mails, and sleep 
     // delayBetweenBatches seconds between batches.
-    final int maxMailsPerBatch = 100; // not configurable for now
-    final int delayBetweenBatches = 60 * 60; // not configurable for now
+    final int maxMailsPerBatch;
+    final int delayBetweenBatches;
 
     /**
      * @param dryRun if true, no mail will actually be sent.
      * @param outputFolder if not-null, an eml file will be created in this folder for each mail to be sent.
      */
-    public SendOptions(boolean dryRun, File outputFolder) {
+    public SendOptions(boolean dryRun, File outputFolder, String statusEmailAddress, int maxMailsPerBatch, int delayBetweenBatches) {
         this.dryRun = dryRun;
         this.outputFolder = outputFolder;
+        this.statusEmailAddress = statusEmailAddress;
+        this.maxMailsPerBatch = maxMailsPerBatch;
+        this.delayBetweenBatches = delayBetweenBatches;
     }
 
     @Override
     public String toString() {
-        return SendOptions.class.getSimpleName() + " [dryRun=" + dryRun + ", outputFolder=" + outputFolder + "]";
+        return SendOptions.class.getSimpleName() + " [dryRun=" + dryRun + ", outputFolder=" + outputFolder + ", statusEmailAddress=" + statusEmailAddress
+                + ", maxMailsPerBatch=" + maxMailsPerBatch + ", delayBetweenBatches=" + delayBetweenBatches + "]";
     }
+
 }

@@ -38,12 +38,9 @@ class Parser {
 
     private static final String TAG = Parser.class.getSimpleName();
 
-
     static enum BodyType {
         HTML, TEXT, AUTO
     };
-
-
 
     /**
      * Read the file at the given path, and return a Body with the text and html versions of the file.
