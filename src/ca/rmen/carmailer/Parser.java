@@ -25,45 +25,24 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import ca.rmen.carmailer.Mail.Body;
+
 import com.glaforge.i18n.io.CharsetToolkit;
 
 /**
  * This class requires the JSoup library.
  * 
- * Reads a file, detects the charset, and creates an html and text version of the file.
+ * Reads files containing the body of a mail or the list of recipients.
  */
 class Parser {
 
     private static final String TAG = Parser.class.getSimpleName();
 
-    static class Body {
-        final String text;
-        final String html;
-        final Charset charset;
-
-        private Body(String text, String html, Charset charset) {
-            this.text = text;
-            this.html = html;
-            this.charset = charset;
-        }
-    }
 
     static enum BodyType {
         HTML, TEXT, AUTO
     };
 
-    /**
-     * A recipient has an e-mail address and an optional set of tags. These tags will replace variables like %1, %2, %3, etc, in the mail content.
-     */
-    static class Recipient {
-        final String address;
-        final String[] tags;
-
-        private Recipient(String address, String[] tags) {
-            this.address = address;
-            this.tags = tags;
-        }
-    }
 
 
     /**

@@ -18,10 +18,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 
-import ca.rmen.carmailer.CarMailer.SmtpCredentials;
-import ca.rmen.carmailer.Parser.Body;
+import ca.rmen.carmailer.Mail.Body;
 import ca.rmen.carmailer.Parser.BodyType;
-import ca.rmen.carmailer.Parser.Recipient;
 
 /**
  * Command-line entry point to CarMailer.
@@ -73,11 +71,11 @@ public class Main {
         // We've gone through all the optional arguments, make sure
         // we have all the required ones.
         if (args.length - i != required_arguments_length) usage();
-        SmtpCredentials credentials = new SmtpCredentials();
-        credentials.serverName = args[i++];
-        credentials.port = Integer.valueOf(args[i++]);
-        credentials.userName = args[i++];
-        credentials.password = args[i++];
+        String serverName = args[i++];
+        int port = Integer.valueOf(args[i++]);
+        String userName = args[i++];
+        String password = args[i++];
+        SmtpCredentials credentials = new SmtpCredentials(serverName, port, userName, password);
         String recipientsFilePath = args[i++];
         String subject = args[i++];
         String bodyFilePath = args[i++];
@@ -90,7 +88,9 @@ public class Main {
 
         // Read the file with the list of e-mail addresses
         List<Recipient> recipients = Parser.parseRecipients(recipientsFilePath, body.charset);
-        CarMailer.sendEmail(credentials, from, recipients, subject, body, dryRun, outputFolder);
+        Mail mail = new Mail(from, recipients, subject, body);
+        SendOptions sendOptions = new SendOptions(dryRun, outputFolder);
+        CarMailer.sendEmail(credentials, mail, sendOptions);
     }
 
     /**
