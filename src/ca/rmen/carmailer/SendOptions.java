@@ -32,6 +32,9 @@ class SendOptions {
     /**
      * @param dryRun if true, no mail will actually be sent.
      * @param outputFolder if not-null, an eml file will be created in this folder for each mail to be sent.
+     * @param statusEmailAddress if not null, a mail will be sent after each batch, and after sending all mails, to this e-mail address.
+     * @param maxMailsPerBatch sent at most this many mails in one batch.
+     * @param delayBetweenBatches wait this many seconds between batches.
      */
     public SendOptions(boolean dryRun, File outputFolder, String statusEmailAddress, int maxMailsPerBatch, int delayBetweenBatches) {
         this.dryRun = dryRun;
