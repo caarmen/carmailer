@@ -48,3 +48,8 @@ Usage:
     *body file*: the body of the mail in html or text format.
 
 ```
+
+Javadoc:
+-------
+
+The javadoc is here: http://caarmen.github.io/carmailer
