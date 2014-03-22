@@ -32,7 +32,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
         Log.init();
         // Read the arguments given on the command line
-        final int required_arguments_length = 7;
+        final int required_arguments_length = 6;
         if (args.length < required_arguments_length) usage();
         int i = 0;
 
@@ -44,8 +44,11 @@ public class Main {
         int delayBetweenBatchesS = 60 * 60; // 1 hour
         String statusEmailAddress = null;
         boolean dryRun = false;
+        String password = null;
         for (i = 0; i < args.length - required_arguments_length; i++) {
-            if (args[i].equals("--body-type")) {
+            if (args[i].equals("--password")) {
+                password = args[++i];
+            } else if (args[i].equals("--body-type")) {
                 try {
                     bodyType = BodyType.valueOf(args[++i].toUpperCase());
                 } catch (IllegalArgumentException e) {
@@ -86,7 +89,10 @@ public class Main {
         String serverName = args[i++];
         int port = Integer.valueOf(args[i++]);
         String userName = args[i++];
-        String password = args[i++];
+        if (password == null) {
+            System.out.print("SMTP password: ");
+            password = new String(System.console().readPassword());
+        }
         SmtpCredentials credentials = new SmtpCredentials(serverName, port, userName, password);
         String recipientsFilePath = args[i++];
         String subject = args[i++];
@@ -110,8 +116,9 @@ public class Main {
     private static void usage() {
         System.err.println("Send an html file by e-mail to a list of recipients.");
         System.err.println();
-        System.err.println("Usage: " + getProgramName() + " [options] <smtp server> <smtp port> <username> <password> <recipients file> <subject> <body file>");
+        System.err.println("Usage: " + getProgramName() + " [options] <smtp server> <smtp port> <username> <recipients file> <subject> <body file>");
         System.err.println("options:");
+        System.err.println("--password <password>: The password for the SMTP server.  If not given here, you will be prompted to enter the password.");
         System.err.println("--from <from>: the value of the From: field.  By default, the username is used.");
         System.err.println("--dry-run: if true, no mail will actually be sent.");
         System.err.println("--body-type <html|text|auto>: Default is auto.");
