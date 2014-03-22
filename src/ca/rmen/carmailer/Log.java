@@ -32,7 +32,11 @@ class Log {
     static final Logger LOGGER = Logger.getLogger(CarMailer.class.getPackage().getName());
     private static final Level LEVEL = Level.FINE;
 
-    static void init() {
+    static {
+        init();
+    }
+
+    private static void init() {
         String logConfigFile = System.getProperty("java.util.logging.config.file");
         // Use our custom formatter unless another one was specified on the command line.
         if (logConfigFile == null) {

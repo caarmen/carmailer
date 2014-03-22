@@ -17,9 +17,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 
 import javax.mail.BodyPart;
@@ -42,18 +42,18 @@ import ca.rmen.carmailer.Mail.Body;
  * 
  * Send a mail in HTML or plain text format to a list of recipients.
  */
-class CarMailer {
+public class CarMailer {
 
     private static final String TAG = CarMailer.class.getSimpleName();
 
     /**
      * Send a mail to a list of recipients. One mail will be sent to each recipient. The recipient will be on the To: field of the mail.
      * 
-     * @param credientials the authentication parameters for the SMTP server
+     * @param credentials the authentication parameters for the SMTP server
      * @param mail the mail to be sent
      * @param sendOptions settings for sending the mails.
      */
-    static void sendEmail(final SmtpCredentials credentials, Mail mail, SendOptions sendOptions) {
+    public static void sendEmail(final SmtpCredentials credentials, Mail mail, SendOptions sendOptions) {
         Log.v(TAG, "sendEmail: credentials = " + credentials + ", mail = " + mail + ", sendOptions = " + sendOptions);
 
         // Set up properties for mail sending.
@@ -71,7 +71,7 @@ class CarMailer {
         });
 
         int i = 0;
-        List<Recipient> failedRecipients = new ArrayList<Recipient>();
+        Set<Recipient> failedRecipients = new LinkedHashSet<Recipient>();
         // Send one mail to each recipient.
         for (Recipient recipient : mail.recipients) {
             try {
@@ -174,7 +174,7 @@ class CarMailer {
     /**
      * Send the progress of our mail sending to the given to address.
      */
-    private static void sendStatusMessage(Transport transport, Session mailSession, Mail mail, String to, int messagesSent, List<Recipient> failedRecipients)
+    private static void sendStatusMessage(Transport transport, Session mailSession, Mail mail, String to, int messagesSent, Set<Recipient> failedRecipients)
             throws UnsupportedEncodingException, MessagingException {
         Log.i(TAG, "sending status e-mail from " + mail.from + " to " + to + ", " + messagesSent + " messages sent");
         int totalRecipientCount = mail.recipients.size();

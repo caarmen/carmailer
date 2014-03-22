@@ -18,11 +18,15 @@ import java.util.Arrays;
 /**
  * A recipient has an e-mail address and an optional set of tags. These tags will replace variables like %1, %2, %3, etc, in the mail content.
  */
-class Recipient {
+public class Recipient {
     final String address;
     final String[] tags;
 
-    Recipient(String address, String[] tags) {
+    /**
+     * @param address the e-mail address of the recipient.
+     * @param tags If sending a mail with tags, this will contain the values for each of the tags.
+     */
+    public Recipient(String address, String[] tags) { // NO_UCD (use default)
         this.address = address;
         this.tags = tags == null ? new String[0] : tags;
     }

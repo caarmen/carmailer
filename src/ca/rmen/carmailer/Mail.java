@@ -19,25 +19,41 @@ import java.util.List;
 /**
  * The contents of a mail and basic headers (from, to, subject).
  */
-class Mail {
+public class Mail {
     final String from;
     final List<Recipient> recipients;
     final String subject;
     final Body body;
 
-    Mail(String from, List<Recipient> to, String subject, Body body) {
+    /**
+     * @param from The e-mail address which will be the value of the From: header in the mail. Can be of the format "john@doe.com" or
+     *            "John Doe &lt;john@doe.com&gt;".
+     * @param to The list of {@link Recipient} which will appear in the To: header in the mail.
+     * @param subject The subject of the mail.
+     * @param body The body of the mail.
+     */
+    public Mail(String from, List<Recipient> to, String subject, Body body) {
         this.from = from;
         this.recipients = to;
         this.subject = subject;
         this.body = body;
     }
 
-    static class Body {
+    /**
+     * The body content of the mail.
+     * 
+     */
+    public static class Body {
         final String text;
         final String html;
         final Charset charset;
 
-        Body(String text, String html, Charset charset) {
+        /**
+         * @param text the mail body in plain text format. Must not be null.
+         * @param html the mail body in HTML format. May be null.
+         * @param charset the character set: must be the same for both the plain text and HTML formats.
+         */
+        public Body(String text, String html, Charset charset) { // NO_UCD (use default)
             this.text = text;
             this.html = html;
             this.charset = charset;

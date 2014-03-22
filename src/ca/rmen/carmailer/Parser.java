@@ -34,21 +34,38 @@ import com.glaforge.i18n.io.CharsetToolkit;
  * 
  * Reads files containing the body of a mail or the list of recipients.
  */
-class Parser {
+public class Parser {
 
     private static final String TAG = Parser.class.getSimpleName();
 
-    static enum BodyType {
-        HTML, TEXT, AUTO
+    public static enum BodyType {
+
+        /**
+         * Forces the parsing of the mail file to HTML.
+         */
+        HTML,
+
+        /**
+         * Forces the parsing of the mail file to plain text.
+         */
+        TEXT,
+
+        /**
+         * Automatically detects of the mail file contains HTML content or plain text content.
+         */
+        AUTO
     };
 
     /**
      * Read the file at the given path, and return a Body with the text and html versions of the file.
      * 
-     * @param charset if null, we will determine the guess the charset, or if this is an html file which
+     * @param filePath the path to the file containing the mail content.
+     * @param bodyType the format of the content in the given filePath.
+     * @param charset if null, we will guess the charset from the file contents, or if this is an html file which
      *            explicitly declares the charset, we will use it. Otherwise we will use the given charset.
+     * @return the content of the mail in plain text and/or HTML format, with the given charset or a charset we were able to guess.
      */
-    static Body parse(String filePath, BodyType bodyType, Charset charset) throws FileNotFoundException, IOException {
+    public static Body parse(String filePath, BodyType bodyType, Charset charset) throws FileNotFoundException, IOException {
         final Body body;
         File bodyFile = new File(filePath);
         boolean shouldGuessCharset = charset == null;
@@ -115,9 +132,13 @@ class Parser {
     }
 
     /**
+     * Read a plain text file containing one e-mail address per line.
+     * 
      * @param filePath path to a file containing one line per recipient. Each line contains an e-mail address, and optionally some tags separated by |.
+     * @param charset the character set to use when reading the given file.
+     * @return the list of {@link Recipient}.
      */
-    static List<Recipient> parseRecipients(String filePath, Charset charset) throws IOException {
+    public static List<Recipient> parseRecipients(String filePath, Charset charset) throws IOException {
         List<Recipient> recipients = new ArrayList<Recipient>();
         List<String> lines = IOUtils.readLines(filePath, charset);
         for (String line : lines) {

@@ -13,13 +13,22 @@
  */
 package ca.rmen.carmailer;
 
-class SmtpCredentials {
+/**
+ * The parameters required to authenticate on an SMTP server.
+ */
+public class SmtpCredentials {
     final String serverName;
     final int port;
     final String userName;
     final String password;
 
-    SmtpCredentials(String serverName, int port, String userName, String password) {
+    /**
+     * @param serverName the IP address or domain name of the SMTP server
+     * @param port The port of the SMTP server.
+     * @param userName The username of the SMTP account.
+     * @param password The password of the SMTP account.
+     */
+    public SmtpCredentials(String serverName, int port, String userName, String password) {
         this.serverName = serverName;
         this.port = port;
         this.userName = userName;

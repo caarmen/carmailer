@@ -11,7 +11,7 @@
  * CONTENTS OF THIS FILE OR ANYTHING ELSE.
  * ----------------------------------------------------------------------------
  */
-package ca.rmen.carmailer;
+package ca.rmen.carmailer.main;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,16 +21,25 @@ import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.List;
 
+import ca.rmen.carmailer.CarMailer;
+import ca.rmen.carmailer.Mail;
 import ca.rmen.carmailer.Mail.Body;
+import ca.rmen.carmailer.Parser;
 import ca.rmen.carmailer.Parser.BodyType;
+import ca.rmen.carmailer.Recipient;
+import ca.rmen.carmailer.SendOptions;
+import ca.rmen.carmailer.SmtpCredentials;
 
 /**
  * Command-line entry point to CarMailer.
  */
 public class Main {
 
+    /**
+     * Reads arguments from the command-line and invokes CarMailer to send a mail to various recipients.
+     * Provide no arguments (or any invalid argument) to see the usage.
+     */
     public static void main(String[] args) throws IOException {
-        Log.init();
         // Read the arguments given on the command line
         final int required_arguments_length = 6;
         if (args.length < required_arguments_length) usage();
@@ -98,13 +107,13 @@ public class Main {
         String subject = args[i++];
         String bodyFilePath = args[i++];
 
-        if (from == null) from = credentials.userName;
+        if (from == null) from = userName;
 
         // Parse the mail body.
         Body body = Parser.parse(bodyFilePath, bodyType, charset);
 
         // Read the file with the list of e-mail addresses
-        List<Recipient> recipients = Parser.parseRecipients(recipientsFilePath, body.charset);
+        List<Recipient> recipients = Parser.parseRecipients(recipientsFilePath, charset);
         Mail mail = new Mail(from, recipients, subject, body);
         SendOptions sendOptions = new SendOptions(dryRun, outputFolder, statusEmailAddress, maxMailsPerBatch, delayBetweenBatchesS);
         CarMailer.sendEmail(credentials, mail, sendOptions);

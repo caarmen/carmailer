@@ -18,7 +18,7 @@ import java.io.File;
 /**
  * Parameters to determine how we will send the mail
  */
-class SendOptions {
+public class SendOptions {
 
     final boolean dryRun;
     final File outputFolder;

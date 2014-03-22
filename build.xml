@@ -26,7 +26,7 @@
 		<!-- Create the carmailer.jar file -->
 		<jar destfile="${bin}/carmailer.jar" filesetmanifest="mergewithoutmain">
 			<manifest>
-				<attribute name="Main-Class" value="ca.rmen.carmailer.Main" />
+				<attribute name="Main-Class" value="ca.rmen.carmailer.main.Main" />
 				<attribute name="Class-Path" value="." />
 			</manifest>
 			<fileset dir="bin" includes="**/*.class" />
