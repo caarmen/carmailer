@@ -38,9 +38,9 @@ import javax.mail.internet.MimeUtility;
 import ca.rmen.carmailer.Mail.Body;
 
 /**
- * This class requires the JavaMail and JSoup libraries.
+ * Send a mail in HTML or plain text format to a list of recipients.<br/>
  * 
- * Send a mail in HTML or plain text format to a list of recipients.
+ * This class requires the JavaMail and JSoup libraries.
  */
 public class CarMailer {
 

@@ -30,9 +30,9 @@ import ca.rmen.carmailer.Mail.Body;
 import com.glaforge.i18n.io.CharsetToolkit;
 
 /**
- * This class requires the JSoup library.
+ * Reads a file containing the body of a mail in plain text or HTML format, and reads a file containing the list of recipients.<br/>
  * 
- * Reads files containing the body of a mail or the list of recipients.
+ * This class requires the JSoup library.
  */
 public class Parser {
 
