@@ -14,6 +14,7 @@
 	<property name="src" location="src" />
 	<property name="bin" location="bin" />
 	<property name="libs" location="libs" />
+	<property name="javadoc" location="javadoc" />
 
 	<path id="classpath">
 		<fileset dir="${libs}" includes="**/*.jar" />
@@ -44,5 +45,11 @@
 
 	<target name="clean" description="clean up">
 		<delete dir="${bin}" />
+		<delete dir="${javadoc}" />
+	</target>
+
+	<target name="javadoc" description="generate javadoc">
+		<javadoc sourcepath="${src}" classpathref="classpath" destdir="${javadoc}" packagenames="ca.rmen.carmailer">
+		</javadoc>
 	</target>
 </project>
