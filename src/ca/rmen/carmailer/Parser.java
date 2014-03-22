@@ -38,6 +38,9 @@ public class Parser {
 
     private static final String TAG = Parser.class.getSimpleName();
 
+    /**
+     * Specify what format the mail body file should be read as.
+     */
     public static enum BodyType {
 
         /**
@@ -51,7 +54,7 @@ public class Parser {
         TEXT,
 
         /**
-         * Automatically detects of the mail file contains HTML content or plain text content.
+         * Automatically detects if the mail file contains HTML content or plain text content.
          */
         AUTO
     };
