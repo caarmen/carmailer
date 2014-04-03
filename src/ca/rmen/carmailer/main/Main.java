@@ -113,7 +113,7 @@ public class Main {
         Body body = Parser.parse(bodyFilePath, bodyType, charset);
 
         // Read the file with the list of e-mail addresses
-        List<Recipient> recipients = Parser.parseRecipients(recipientsFilePath, charset);
+        List<Recipient> recipients = Parser.parseRecipients(recipientsFilePath, body.charset);
         Mail mail = new Mail(from, recipients, subject, body);
         SendOptions sendOptions = new SendOptions(dryRun, outputFolder, statusEmailAddress, maxMailsPerBatch, delayBetweenBatchesS);
         CarMailer.sendEmail(credentials, mail, sendOptions);

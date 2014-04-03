@@ -20,10 +20,10 @@ import java.util.List;
  * The contents of a mail and basic headers (from, to, subject).
  */
 public class Mail {
-    final String from;
-    final List<Recipient> recipients;
-    final String subject;
-    final Body body;
+    public final String from;
+    public final List<Recipient> recipients;
+    public final String subject;
+    public final Body body;
 
     /**
      * @param from The e-mail address which will be the value of the From: header in the mail. Can be of the format "john@doe.com" or
@@ -44,9 +44,9 @@ public class Mail {
      * 
      */
     public static class Body {
-        final String text;
-        final String html;
-        final Charset charset;
+        public final String text;
+        public final String html;
+        public final Charset charset;
 
         /**
          * @param text the mail body in plain text format. Must not be null.
