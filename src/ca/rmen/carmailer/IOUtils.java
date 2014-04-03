@@ -57,8 +57,9 @@ class IOUtils {
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), charset));
         List<String> result = new ArrayList<String>();
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+            // remove comments
+            line = line.replaceAll("#.*$", "");
             line = line.trim();
-            if (line.startsWith("#")) continue;
             if (line.isEmpty()) continue;
             result.add(line);
         }
