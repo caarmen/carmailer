@@ -22,6 +22,11 @@ import javax.mail.Session;
 import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeMessage;
 
+/**
+ * We have to override MimeMessage just to be able to set our own Message-ID.
+ * 
+ * @see {@link CarMimeMessage#updateMessageID()}
+ */
 public class CarMimeMessage extends MimeMessage {
     private static Random sRandom = new Random();
     private String mMessageId;

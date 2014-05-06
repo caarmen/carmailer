@@ -25,6 +25,7 @@ import java.util.List;
 import ca.rmen.carmailer.CarMailer;
 import ca.rmen.carmailer.Mail;
 import ca.rmen.carmailer.Mail.Body;
+import ca.rmen.carmailer.MailHeaders;
 import ca.rmen.carmailer.Parser;
 import ca.rmen.carmailer.Parser.BodyType;
 import ca.rmen.carmailer.Recipient;
@@ -54,6 +55,7 @@ public class Main {
         int delayBetweenBatchesS = 60 * 60; // 1 hour
         String statusEmailAddress = null;
         String messageIdDomain = InetAddress.getLocalHost().getHostName();
+        String userAgent = "CarMailer";
         boolean dryRun = false;
         String password = null;
         for (i = 0; i < args.length - required_arguments_length; i++) {
@@ -92,6 +94,8 @@ public class Main {
                 statusEmailAddress = args[++i];
             } else if (args[i].equals("--domain")) {
                 messageIdDomain = args[++i];
+            } else if (args[i].equals("--user-agent")) {
+                userAgent = args[++i];
             } else {
                 break;
             }
@@ -118,9 +122,10 @@ public class Main {
 
         // Read the file with the list of e-mail addresses
         List<Recipient> recipients = Parser.parseRecipients(recipientsFilePath, body.charset);
-        Mail mail = new Mail(from, recipients, subject, body);
+        MailHeaders headers = new MailHeaders(messageIdDomain, userAgent, from, subject);
+        Mail mail = new Mail(headers, recipients, body);
         SendOptions sendOptions = new SendOptions(dryRun, outputFolder, statusEmailAddress, maxMailsPerBatch, delayBetweenBatchesS);
-        CarMailer.sendEmail(credentials, mail, sendOptions, messageIdDomain);
+        CarMailer.sendEmail(credentials, mail, sendOptions);
     }
 
     /**

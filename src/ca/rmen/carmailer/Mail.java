@@ -20,22 +20,18 @@ import java.util.List;
  * The contents of a mail and basic headers (from, to, subject).
  */
 public class Mail {
-    public final String from;
+    public final MailHeaders headers;
     public final List<Recipient> recipients;
-    public final String subject;
     public final Body body;
 
     /**
-     * @param from The e-mail address which will be the value of the From: header in the mail. Can be of the format "john@doe.com" or
-     *            "John Doe &lt;john@doe.com&gt;".
+     * @param headers the mail headers
      * @param to The list of {@link Recipient} which will appear in the To: header in the mail.
-     * @param subject The subject of the mail.
      * @param body The body of the mail.
      */
-    public Mail(String from, List<Recipient> to, String subject, Body body) {
-        this.from = from;
+    public Mail(MailHeaders headers, List<Recipient> to, Body body) {
+        this.headers = headers;
         this.recipients = to;
-        this.subject = subject;
         this.body = body;
     }
 

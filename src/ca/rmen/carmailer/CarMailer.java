@@ -18,8 +18,10 @@ import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -56,7 +58,7 @@ public class CarMailer {
      * @param mail the mail to be sent
      * @param sendOptions settings for sending the mails.
      */
-    public static void sendEmail(final SmtpCredentials credentials, Mail mail, SendOptions sendOptions, String messageIdDomain) {
+    public static void sendEmail(final SmtpCredentials credentials, Mail mail, SendOptions sendOptions) {
         Log.v(TAG, "sendEmail: credentials = " + credentials + ", mail = " + mail + ", sendOptions = " + sendOptions);
 
         // Set up properties for mail sending.
@@ -81,7 +83,7 @@ public class CarMailer {
             try {
                 Log.i(TAG, "Sending to " + (++i) + ": " + recipient.address + ".");
 
-                Message message = createMessage(mailSession, messageIdDomain, recipient, mail.from, mail.subject, mail.body);
+                Message message = createMessage(mailSession, recipient, mail.headers, mail.body);
 
                 if (sendOptions.outputFolder != null) {
                     File file = new File(sendOptions.outputFolder, recipient.address + ".eml");
@@ -109,7 +111,7 @@ public class CarMailer {
 
                     // Send a progress mail at the end of the batch or the end of all mails.
                     if ((batchEnd || end) && sendOptions.statusEmailAddress != null) {
-                        sendStatusMessage(transport, messageIdDomain, mailSession, mail, sendOptions.statusEmailAddress, i, failedRecipients);
+                        sendStatusMessage(transport, mailSession, mail, sendOptions.statusEmailAddress, i, failedRecipients);
                     }
                     transport.close();
 
@@ -135,8 +137,8 @@ public class CarMailer {
      * @throws UnsupportedEncodingException
      * @throws MessagingException
      */
-    private static Message createMessage(Session mailSession, String userName, Recipient to, String from, String subject, Body body)
-            throws UnsupportedEncodingException, MessagingException {
+    private static Message createMessage(Session mailSession, Recipient to, MailHeaders headers, Body body) throws UnsupportedEncodingException,
+            MessagingException {
 
         Log.i(TAG, "Create message for " + to);
         String bodyText = body.text;
@@ -145,12 +147,12 @@ public class CarMailer {
             bodyText = bodyText.replaceAll("%" + (tagIndex + 1), to.tags[tagIndex]);
             if (bodyHtml != null) bodyHtml = bodyHtml.replaceAll("%" + (tagIndex + 1), to.tags[tagIndex]);
         }
-        MimeMessage message = new CarMimeMessage(mailSession, userName);
+        MimeMessage message = new CarMimeMessage(mailSession, headers.messageIdDomain);
 
         // Set the subject, from, and to fields.
-        message.setSubject(MimeUtility.encodeText(subject, body.charset.name(), "Q"));
-        message.setFrom(new InternetAddress(from));
-        message.setHeader("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:24.0) Gecko/20100101 Thunderbird/24.5.0");
+        message.setSubject(MimeUtility.encodeText(headers.subject, body.charset.name(), "Q"));
+        message.setFrom(new InternetAddress(headers.from));
+        message.setHeader("User-Agent", headers.userAgent);
         message.addRecipients(Message.RecipientType.TO, InternetAddress.parse(to.address));
         message.setSentDate(new Date());
 
@@ -182,11 +184,12 @@ public class CarMailer {
     /**
      * Send the progress of our mail sending to the given to address.
      */
-    private static void sendStatusMessage(Transport transport, String userName, Session mailSession, Mail mail, String to, int messagesSent,
-            Set<Recipient> failedRecipients) throws UnsupportedEncodingException, MessagingException {
-        Log.i(TAG, "sending status e-mail from " + mail.from + " to " + to + ", " + messagesSent + " messages sent");
+    private static void sendStatusMessage(Transport transport, Session mailSession, Mail mail, String to, int messagesSent, Set<Recipient> failedRecipients)
+            throws UnsupportedEncodingException, MessagingException {
+        Log.i(TAG, "sending status e-mail from " + mail.headers.from + " to " + to + ", " + messagesSent + " messages sent");
         int totalRecipientCount = mail.recipients.size();
-        String subject = messagesSent + " of " + totalRecipientCount + " sent: \"" + mail.subject + "\"";
+        String subject = messagesSent + " of " + totalRecipientCount + " sent: \"" + mail.headers.subject + "\"";
+        MailHeaders statusHeaders = new MailHeaders(mail.headers.messageIdDomain, mail.headers.userAgent, mail.headers.from, subject);
         StringBuilder bodyBuilder = new StringBuilder();
         bodyBuilder.append("Sent " + messagesSent + " messages out of " + totalRecipientCount + ".");
         bodyBuilder.append("\n\n");
@@ -199,7 +202,10 @@ public class CarMailer {
         }
         Body statusBody = new Body(bodyBuilder.toString(), null, Charset.defaultCharset());
         Recipient statusRecipient = new Recipient(to, null);
-        Message statusMessage = createMessage(mailSession, userName, statusRecipient, mail.from, subject, statusBody);
+        List<Recipient> statusRecipients = new ArrayList<Recipient>();
+        statusRecipients.add(statusRecipient);
+        Mail statusMail = new Mail(statusHeaders, statusRecipients, statusBody);
+        Message statusMessage = createMessage(mailSession, statusRecipient, statusMail.headers, statusBody);
         transport.sendMessage(statusMessage, statusMessage.getAllRecipients());
     }
 }
