@@ -37,6 +37,7 @@ import com.glaforge.i18n.io.CharsetToolkit;
 public class Parser {
 
     private static final String TAG = Parser.class.getSimpleName();
+    private static final int MAX_LINE_LENGTH = 72;
 
     /**
      * Specify what format the mail body file should be read as.
@@ -81,6 +82,7 @@ public class Parser {
             // the body will contain an html part
             if (bodyType == BodyType.HTML || elements.size() > 4) {
                 String html = document.outerHtml();
+                html = wrapText(html);
                 if (shouldGuessCharset) charset = document.outputSettings().charset();
                 String text = htmlToText(document);
                 body = new Body(text, html, charset);
@@ -127,11 +129,33 @@ public class Parser {
         // Convert the html document to text and replace all the placeholders with newlines.
         String textBody = document.text();
         textBody = textBody.replaceAll(placeholder + " *", "\n");
+        textBody = wrapText(textBody);
 
         // Print the text version of the mail in debug mode.
         String debugTextBody = new String(textBody.getBytes("UTF-8"));
         Log.d(TAG, debugTextBody);
         return textBody;
+    }
+
+    private static String wrapText(String text) {
+        String[] lines = text.split("\n");
+        StringBuilder result = new StringBuilder();
+        for (String line : lines) {
+            if (line.length() <= MAX_LINE_LENGTH) {
+                result.append(line).append("\n");
+            } else {
+                while (line.length() > 0) {
+                    int spaceIndex = line.lastIndexOf(" ", MAX_LINE_LENGTH);
+                    if (spaceIndex > 0) {
+                        result.append(line.substring(0, spaceIndex)).append("\n");
+                        line = line.substring(spaceIndex + 1);
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        return result.toString();
     }
 
     /**

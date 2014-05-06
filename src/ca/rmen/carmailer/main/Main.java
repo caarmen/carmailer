@@ -15,6 +15,7 @@ package ca.rmen.carmailer.main;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.CodeSource;
@@ -52,6 +53,7 @@ public class Main {
         int maxMailsPerBatch = 100;
         int delayBetweenBatchesS = 60 * 60; // 1 hour
         String statusEmailAddress = null;
+        String messageIdDomain = InetAddress.getLocalHost().getHostName();
         boolean dryRun = false;
         String password = null;
         for (i = 0; i < args.length - required_arguments_length; i++) {
@@ -88,6 +90,8 @@ public class Main {
                 delayBetweenBatchesS = Integer.valueOf(args[++i]);
             } else if (args[i].equals("--send-progress")) {
                 statusEmailAddress = args[++i];
+            } else if (args[i].equals("--domain")) {
+                messageIdDomain = args[++i];
             } else {
                 break;
             }
@@ -116,7 +120,7 @@ public class Main {
         List<Recipient> recipients = Parser.parseRecipients(recipientsFilePath, body.charset);
         Mail mail = new Mail(from, recipients, subject, body);
         SendOptions sendOptions = new SendOptions(dryRun, outputFolder, statusEmailAddress, maxMailsPerBatch, delayBetweenBatchesS);
-        CarMailer.sendEmail(credentials, mail, sendOptions);
+        CarMailer.sendEmail(credentials, mail, sendOptions, messageIdDomain);
     }
 
     /**
