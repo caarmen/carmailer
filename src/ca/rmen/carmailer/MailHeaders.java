@@ -14,7 +14,7 @@
 package ca.rmen.carmailer;
 
 /**
- * Parameters to determine how we will send the mail
+ * Configure various headers at the beginning of the mail.
  */
 public class MailHeaders {
 
