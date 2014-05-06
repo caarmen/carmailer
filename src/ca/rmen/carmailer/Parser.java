@@ -81,8 +81,7 @@ public class Parser {
             // If we've forced html format, or we have some real html elements,
             // the body will contain an html part
             if (bodyType == BodyType.HTML || elements.size() > 4) {
-                String html = document.outerHtml();
-                html = wrapText(html);
+                String html = bodyText;
                 if (shouldGuessCharset) charset = document.outputSettings().charset();
                 String text = htmlToText(document);
                 body = new Body(text, html, charset);
@@ -144,12 +143,14 @@ public class Parser {
             if (line.length() <= MAX_LINE_LENGTH) {
                 result.append(line).append("\n");
             } else {
-                while (line.length() > 0) {
-                    int spaceIndex = line.lastIndexOf(" ", MAX_LINE_LENGTH);
+                String splitLine = line;
+                while (splitLine.length() > 0) {
+                    int spaceIndex = splitLine.lastIndexOf(" ", MAX_LINE_LENGTH);
                     if (spaceIndex > 0) {
-                        result.append(line.substring(0, spaceIndex)).append("\n");
-                        line = line.substring(spaceIndex + 1);
+                        result.append(splitLine.substring(0, spaceIndex)).append("\n");
+                        splitLine = splitLine.substring(spaceIndex + 1);
                     } else {
+                        result.append(splitLine).append("\n");
                         break;
                     }
                 }
