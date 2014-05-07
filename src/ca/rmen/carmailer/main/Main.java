@@ -146,6 +146,8 @@ public class Main {
         System.err.println("--output-folder <path>: if specified, each mail will be written to a file in this folder");
         System.err
                 .println("--charset <charset>: specify the charset for reading and writing. By default the charset is guessed from the content of the file or the http-equiv meta tag in the html file.");
+        System.err.println("--domain <domain>: The last part of the Message-ID header.  By default, the name of the machine is used");
+        System.err.println("--user-agent <user agent>: The value of the User-Agent header.  By default, this is Carmailer");
         System.err.println();
         System.err.println("*recipients file*: must be a text file containing one e-mail address per line.");
         System.err.println("*body file*: the body of the mail in html or text format.");
