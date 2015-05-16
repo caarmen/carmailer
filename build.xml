@@ -23,7 +23,7 @@
 	<target name="jar" description="create the carmailer.jar file">
 		<mkdir dir="${bin}" />
 		<!-- Compile -->
-		<javac srcdir="${src}" destdir="${bin}" classpathref="classpath" includeantruntime="false" debug="true" debuglevel="lines,vars,source" />
+		<javac srcdir="${src}" destdir="${bin}" classpathref="classpath" includeantruntime="false" debug="true" debuglevel="lines,vars,source" source="1.6" target="1.6"/>
 		<!-- Create the carmailer.jar file -->
 		<jar destfile="${bin}/carmailer.jar" filesetmanifest="mergewithoutmain">
 			<manifest>
