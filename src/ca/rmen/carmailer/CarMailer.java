@@ -95,8 +95,8 @@ public class CarMailer {
                 // Send the mail.
                 if (!sendOptions.dryRun) {
                     Transport transport = mailSession.getTransport();
-                    transport.connect();
                     try {
+                        transport.connect();
                         transport.sendMessage(message, message.getAllRecipients());
                     } catch (MessagingException e) {
                         Log.e(TAG, "Could not send mail to " + recipient + ": " + e.getMessage(), e);
